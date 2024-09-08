@@ -1,7 +1,14 @@
+// lib/widgets/flour_mill_card.dart
 import 'package:flutter/material.dart';
+import 'package:flour_mill/model/flour_mills.dart';
 
 class FlourMillCard extends StatelessWidget {
-  const FlourMillCard({super.key});
+  final FlourMill flourMill;
+
+  const FlourMillCard({
+    Key? key,
+    required this.flourMill,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +33,7 @@ class FlourMillCard extends StatelessWidget {
                       topRight: Radius.circular(15),
                     ),
                     child: Image.asset(
-                      "lib/assets/mills/mill1.png",
+                      flourMill.imageUrl,
                       height: 180,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -36,27 +43,24 @@ class FlourMillCard extends StatelessWidget {
               ),
               // Delivery Info and Tag
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.timer_sharp,
-                        size: 16, color: Colors.greenAccent),
+                    const Icon(Icons.timer_sharp, size: 16, color: Colors.greenAccent),
                     const SizedBox(width: 4),
                     Text(
-                      '23 mins • 1 km',
+                      flourMill.deliveryInfo,
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green[50],
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: const Text(
-                        'NEAR & FAST',
+                      child: Text(
+                        flourMill.tag,
                         style: TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.w500,
@@ -72,8 +76,8 @@ class FlourMillCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Row(
                   children: [
-                    const Text(
-                      'Delhi Flour Mill',
+                    Text(
+                      flourMill.name,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -81,16 +85,15 @@ class FlourMillCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: const Row(
-                        children:  [
+                      child: Row(
+                        children: [
                           Text(
-                            '4.6',
+                            '${flourMill.rating}',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -106,10 +109,9 @@ class FlourMillCard extends StatelessWidget {
               ),
               // Type and Price Info
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: Text(
-                  'Flour • Grains',
+                  flourMill.type,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
