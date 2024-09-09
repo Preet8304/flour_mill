@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flour_mill/Screens/ProfileScreen.dart';
 
 class Appbarwidget extends StatelessWidget {
   const Appbarwidget({super.key});
@@ -15,9 +16,9 @@ class Appbarwidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           InkWell(
-
             onTap: () {},
-            child: Container(clipBehavior: Clip.hardEdge,
+            child: Container(
+              clipBehavior: Clip.hardEdge,
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
                   color: Colors.white,
@@ -29,30 +30,23 @@ class Appbarwidget extends StatelessWidget {
                       blurRadius: 10,
                       offset: Offset(0, 3),
                     ),
-
                   ]),
               child: Icon(CupertinoIcons.bars),
             ),
           ),
-          InkWell(
+          InkWell(borderRadius: BorderRadius.circular(30),
             onTap: () {},
-            child: Container(clipBehavior: Clip.hardEdge,
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromARGB(100, 184, 176, 176),
-                      spreadRadius: 2,
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
-                    ),
 
-                  ]),
-              child: Icon(Icons.account_circle_sharp),
-            ),
-          )
+                child: IconButton(
+                  icon: const Icon(Icons.account_circle,size: 30,),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProfileScreen()));
+                    },
+                    )),
+
         ],
       ),
     );

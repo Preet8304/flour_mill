@@ -61,7 +61,7 @@ class FlourMillCard extends StatelessWidget {
                       ),
                       child: Text(
                         flourMill.tag,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.w500,
                           fontSize: 12,
@@ -78,7 +78,7 @@ class FlourMillCard extends StatelessWidget {
                   children: [
                     Text(
                       flourMill.name,
-                      style: TextStyle(
+                      style:const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -94,13 +94,13 @@ class FlourMillCard extends StatelessWidget {
                         children: [
                           Text(
                             '${flourMill.rating}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
                           ),
-                          Icon(Icons.star, color: Colors.white, size: 12),
+                         const  Icon(Icons.star, color: Colors.white, size: 12),
                         ],
                       ),
                     ),
