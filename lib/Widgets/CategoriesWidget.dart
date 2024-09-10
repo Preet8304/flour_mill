@@ -8,9 +8,9 @@ class Categorieswidget extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
       child: Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),

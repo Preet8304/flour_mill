@@ -2,13 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flour_mill/Screens/ProfileScreen.dart';
 
-class Appbarwidget extends StatelessWidget {
-  const Appbarwidget({super.key});
+class AppbarWidget extends StatelessWidget {
+  const AppbarWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: 15,
         vertical: 15,
       ),
@@ -19,7 +19,7 @@ class Appbarwidget extends StatelessWidget {
             onTap: () {},
             child: Container(
               clipBehavior: Clip.hardEdge,
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -31,7 +31,7 @@ class Appbarwidget extends StatelessWidget {
                       offset: Offset(0, 3),
                     ),
                   ]),
-              child: Icon(CupertinoIcons.bars),
+              child: const Icon(CupertinoIcons.bars),
             ),
           ),
           InkWell(borderRadius: BorderRadius.circular(30),

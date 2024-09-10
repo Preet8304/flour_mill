@@ -1,6 +1,9 @@
 // lib/widgets/flour_mill_card.dart
+import 'package:flour_mill/Screens/OrderingScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flour_mill/model/flour_mills.dart';
+import 'package:flour_mill/model/flour_mill_data.dart';
+import 'package:flour_mill/Screens/OrderingScreen.dart';
 
 class FlourMillCard extends StatelessWidget {
   final FlourMill flourMill;
@@ -15,7 +18,11 @@ class FlourMillCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          List<FlourMill> mills = FlourMillData.getFlourMills();
+          Navigator.push(context, MaterialPageRoute(builder: (context) => OrderingScreen(mills:flourMill,)));
+
+        },
         child: Card(
           elevation: 4,
           shape: RoundedRectangleBorder(
