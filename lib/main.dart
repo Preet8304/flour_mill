@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: " Mill to Door",
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: const Color.fromARGB(10, 174, 56, 200),
       ),
       debugShowCheckedModeBanner: false,
       routes: {
