@@ -1,7 +1,8 @@
 import 'package:flour_mill/Widgets/AppbarWidget.dart';
+import 'package:flour_mill/Widgets/ItemCard.dart';
 import 'package:flour_mill/model/flour_mills.dart';
 import 'package:flutter/material.dart';
-import 'package:flour_mill/model/flour_mill_data.dart';
+import 'package:flour_mill/Widgets/ItemCard.dart';
 
 class OrderingScreen extends StatefulWidget {
   const OrderingScreen({super.key,required this.mills});
@@ -16,7 +17,8 @@ class _OrderingScreenState extends State<OrderingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.mills.name),)
+      appBar: AppBar(title: Text(widget.mills.name),),
+          body:FlourMillScreen() ,
     );
   }
 }

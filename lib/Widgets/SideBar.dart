@@ -1,3 +1,5 @@
+import 'package:flour_mill/Screens/OrderHistory.dart';
+import 'package:flour_mill/Screens/ProfileScreen.dart';
 import 'package:flutter/material.dart';
 
 class SideBar extends StatefulWidget {
@@ -35,16 +37,24 @@ class _SideBarState extends State<SideBar> {
               title: const Text('Favorites'),
               onTap: () => null,
             ),
+            Divider(),
             ListTile(
               leading:const Icon(Icons.line_style),
               title: const Text('Order History'),
-              onTap: () => null,
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=> const OrderScreen()));},
             ),
             ListTile(
               leading:const Icon(Icons.person),
               title: const Text('Account'),
+              onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>  ProfileScreen()));},
+            ),
+            Divider(),
+            ListTile(
+              leading:const Icon(Icons.question_mark),
+              title: const Text('Query Status'),
               onTap: () => null,
-            ),ListTile(
+            ),
+            ListTile(
               leading:const Icon(Icons.feedback_outlined),
               title: const Text('Feedback'),
               onTap: () => null,

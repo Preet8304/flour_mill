@@ -63,6 +63,9 @@ flutter:
     - lib/assets/categories/(1).png
     - lib/assets/categories/(2).png
     - lib/assets/categories/(3).png
+    - lib/assets/categories/(4).png
+    - lib/assets/categories/(5).png
+    - lib/assets/categories/(6).png
     - lib/assets/mills/mill1.png
     - lib/assets/mills/mill2.jpeg
     - lib/assets/mills/mill3.jpeg

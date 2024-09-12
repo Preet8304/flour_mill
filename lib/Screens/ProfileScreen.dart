@@ -24,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: NetworkImage('https://example.com/allison.jpg'), // Replace with the actual image URL
+                  backgroundImage: NetworkImage('https://d2qp0siotla746.cloudfront.net/img/use-cases/profile-picture/template_3.jpg'), // Replace with the actual image URL
                 ),
                 SizedBox(width: 16),
                 Expanded( // Apply Expanded to fix the overflow
