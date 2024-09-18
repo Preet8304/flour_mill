@@ -37,7 +37,7 @@ class _SideBarState extends State<SideBar> {
               title: const Text('Favorites'),
               onTap: () => null,
             ),
-            Divider(),
+            const Divider(),
             ListTile(
               leading:const Icon(Icons.line_style),
               title: const Text('Order History'),
@@ -48,7 +48,7 @@ class _SideBarState extends State<SideBar> {
               title: const Text('Account'),
               onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>  ProfileScreen()));},
             ),
-            Divider(),
+            const Divider(),
             ListTile(
               leading:const Icon(Icons.question_mark),
               title: const Text('Query Status'),

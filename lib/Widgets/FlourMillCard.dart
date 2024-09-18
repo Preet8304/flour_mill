@@ -1,29 +1,34 @@
-// lib/widgets/flour_mill_card.dart
 import 'package:flour_mill/Screens/OrderingScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flour_mill/model/flour_mills.dart';
-import 'package:flour_mill/model/flour_mill_data.dart';
-import 'package:flour_mill/Screens/OrderingScreen.dart';
 
 class FlourMillCard extends StatelessWidget {
   final FlourMill flourMill;
 
   const FlourMillCard({
-    Key? key,
+    super.key,
     required this.flourMill,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: () {
-          List<FlourMill> mills = FlourMillData.getFlourMills();
-          Navigator.push(context, MaterialPageRoute(builder: (context) => OrderingScreen(mills:flourMill,)));
-
+          // Navigate to the OrderingScreen with the selected flourMill
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderingScreen(
+                mills: flourMill,
+              ),
+            ),
+          );
         },
         child: Card(
+          color: Colors.white,
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -48,12 +53,13 @@ class FlourMillCard extends StatelessWidget {
                   ),
                 ],
               ),
-              // Delivery Info and Tag
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.timer_sharp, size: 16, color: Colors.greenAccent),
+                    const Icon(Icons.timer_sharp,
+                        size: 16, color: Colors.greenAccent),
                     const SizedBox(width: 4),
                     Text(
                       flourMill.deliveryInfo,
@@ -61,7 +67,8 @@ class FlourMillCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green[50],
                         borderRadius: BorderRadius.circular(5),
@@ -78,21 +85,22 @@ class FlourMillCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Name and Rating
+              const Divider(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Row(
                   children: [
                     Text(
                       flourMill.name,
-                      style:const TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(5),
@@ -107,16 +115,17 @@ class FlourMillCard extends StatelessWidget {
                               fontSize: 12,
                             ),
                           ),
-                         const  Icon(Icons.star, color: Colors.white, size: 12),
+                          const Icon(Icons.star,
+                              color: Colors.white, size: 12),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              // Type and Price Info
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: Text(
                   flourMill.type,
                   style: TextStyle(
@@ -132,3 +141,7 @@ class FlourMillCard extends StatelessWidget {
     );
   }
 }
+
+
+
+
