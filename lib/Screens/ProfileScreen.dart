@@ -15,12 +15,12 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+           const Row(
               children: [
                 CircleAvatar(
                   radius: 40,
@@ -51,27 +51,32 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-            InfoTile(
+            const InfoTile(
               icon: Icons.person_outline,
               title: 'Shizuka',
               subtitle: 'Full Name',
             ),
-            InfoTile(
+            const InfoTile(
               icon: Icons.phone,
               title: '+91 8888888888',
               subtitle: 'Mobile Number',
             ),
-            InfoTile(
+            const InfoTile(
               icon: Icons.location_on,
               title: 'Tokyo, Nerima Ward',
               subtitle: 'Location',
             ),
+            const SizedBox(
+              height: 30,
+            ),
+            ElevatedButton(onPressed: (){}, child: const Text("LogOut"))
           ],
         ),
       ),

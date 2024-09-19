@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "239267139744",
+    "firebase_url": "https://flour-mill-5b3f1-default-rtdb.firebaseio.com",
+    "project_id": "flour-mill-5b3f1",
+    "storage_bucket": "flour-mill-5b3f1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239267139744:android:8cc03c3e9a9651eeebb9c5",
+        "android_client_info": {
+          "package_name": "com.example.flour_mill"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBK5nVt7zlLtHIyafew6CfeZckEybVBYBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
