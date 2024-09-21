@@ -1,6 +1,6 @@
-import 'package:flour_mill/Screens/OrderingScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flour_mill/model/flour_mills.dart';
+import 'package:flour_mill/Screens/OrderingScreen.dart'; // Ensure this import is added
 
 class FlourMillCard extends StatelessWidget {
   final FlourMill flourMill;
@@ -21,9 +21,7 @@ class FlourMillCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => OrderingScreen(
-                mills: flourMill,
-              ),
+              builder: (context) => OrderingScreen(mills: flourMill)
             ),
           );
         },
@@ -115,8 +113,7 @@ class FlourMillCard extends StatelessWidget {
                               fontSize: 12,
                             ),
                           ),
-                          const Icon(Icons.star,
-                              color: Colors.white, size: 12),
+                          const Icon(Icons.star, color: Colors.white, size: 12),
                         ],
                       ),
                     ),
@@ -141,7 +138,3 @@ class FlourMillCard extends StatelessWidget {
     );
   }
 }
-
-
-
-

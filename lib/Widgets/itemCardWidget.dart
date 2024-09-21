@@ -19,7 +19,8 @@ class ItemCardWidget extends StatefulWidget {
 }
 
 class _ItemCardWidgetState extends State<ItemCardWidget> {
-  final TextEditingController quantityController = TextEditingController(text: '1'); // Default quantity is 1
+  final TextEditingController quantityController =
+      TextEditingController(text: '1'); // Default quantity is 1
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +77,8 @@ class _ItemCardWidgetState extends State<ItemCardWidget> {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  final int quantity = int.tryParse(quantityController.text) ?? 1;
+                  final int quantity =
+                      int.tryParse(quantityController.text) ?? 1;
                   widget.onAdd(quantity);
                 },
                 child: const Text('ADD'),

@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this import
+import 'dart:convert'; // Add this import
 
 class CheckoutSummary extends StatefulWidget {
   final Map<String, int> cart;
   final Function(String) onRemove; // Callback to remove item from cart
+  final Function() refreshHomePage; // Add this line
 
   const CheckoutSummary(
-      {super.key, required this.cart, required this.onRemove});
+      {super.key,
+      required this.cart,
+      required this.onRemove,
+      required this.refreshHomePage,
+      required List orderHistory}); // Add this line
 
   @override
   _CheckoutPageState createState() => _CheckoutPageState();
@@ -59,6 +66,72 @@ class _CheckoutPageState extends State<CheckoutSummary> {
       widget.onRemove(itemName); // Notify removal to parent
       _calculateTotalPrice();
     });
+  }
+
+  void _showConfirmationAndNavigateToOrderHistory() {
+    _saveOrder().then((_) {
+      // Show a dialog instead of a banner
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Order Confirmed!',
+              style:
+                  TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Your order has been placed successfully.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Total: \$${_totalPrice.toStringAsFixed(2)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Explore More...'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  _navigateToHomePage();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  Future<void> _saveOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newOrder = {
+      'orderId': 'ORD-${DateTime.now().millisecondsSinceEpoch}',
+      'orderDate': DateTime.now().toIso8601String(),
+      'totalPrice': _totalPrice,
+      'items': _cart.map((key, value) => MapEntry(key, value.toString())),
+    };
+
+    List<String> orderHistory = prefs.getStringList('orderHistory') ?? [];
+    orderHistory.add(jsonEncode(newOrder));
+    await prefs.setStringList('orderHistory', orderHistory);
+  }
+
+  void _navigateToHomePage() {
+    widget.refreshHomePage(); // Call the refresh function
+    Navigator.of(context).popUntil(
+        (route) => route.isFirst); // Navigate to the first route (HomePage)
   }
 
   @override
@@ -141,25 +214,27 @@ class _CheckoutPageState extends State<CheckoutSummary> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: [
-                                        Expanded( 
+                                        Expanded(
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               IconButton(
                                                 icon: const Icon(Icons.remove),
                                                 onPressed: () =>
-                                                    _updateQuantity(itemName, -1),
+                                                    _updateQuantity(
+                                                        itemName, -1),
                                               ),
                                               Text(
                                                 itemQuantity.toString(),
-                                                style:
-                                                    const TextStyle(fontSize: 16),
+                                                style: const TextStyle(
+                                                    fontSize: 16),
                                               ),
                                               Expanded(
                                                 child: IconButton(
                                                   icon: const Icon(Icons.add),
                                                   onPressed: () =>
-                                                      _updateQuantity(itemName, 1),
+                                                      _updateQuantity(
+                                                          itemName, 1),
                                                 ),
                                               ),
                                             ],
@@ -186,34 +261,7 @@ class _CheckoutPageState extends State<CheckoutSummary> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      // Handle payment or order confirmation
-                      // For now, we'll just show a confirmation dialog
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Confirm Order'),
-                          content: Text(
-                            'Are you sure you want to confirm the order with a total of \$${_totalPrice.toStringAsFixed(2)}?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // Handle order confirmation
-                                Navigator.pop(context);
-                                Navigator.pop(
-                                    context, _cart); // Pass updated cart back
-                              },
-                              child: const Text('Confirm'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                    onPressed: _showConfirmationAndNavigateToOrderHistory,
                     child: const Text('Confirm Order'),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
