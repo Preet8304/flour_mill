@@ -23,7 +23,9 @@ class _OrderingScreenState extends State<OrderingScreen> {
   @override
   Widget build(BuildContext context) {
     // Calculate total cart items
-    final cartCount = cart.values.fold(0, (sum, quantity) => sum + quantity);
+
+
+    final cartCount = cart.values.fold(0, (sum, quantity) => sum + 1);  // solved quantity  error code 'sum+quantity'
 
     return Scaffold(
       appBar: AppBar(
@@ -45,7 +47,7 @@ class _OrderingScreenState extends State<OrderingScreen> {
               onAddToCart: (String flourName, int quantity) {
                 // Update cart when items are added
                 setState(() {
-                  cart[flourName] = (cart[flourName] ?? 0) + quantity;
+                  cart[flourName] = (cart[flourName] ?? 0) + quantity; //quantity
                 });
               },
               onRemoveFromCart: _removeFromCart,
