@@ -25,7 +25,8 @@ class _OrderingScreenState extends State<OrderingScreen> {
     // Calculate total cart items
 
 
-    final cartCount = cart.values.fold(0, (sum, quantity) => sum + 1);  // solved quantity  error code 'sum+quantity'
+    final cartCount = cart.values.fold(0, (sum, quantity) => sum + 1); // solved quantity  error code 'sum+quantity'
+    //final cartCount = cart.values.fold(0, (sum, quantity) => sum + 1);
 
     return Scaffold(
       appBar: AppBar(
