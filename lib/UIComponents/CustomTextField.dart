@@ -1,59 +1,41 @@
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatefulWidget {
+class CustomTextField extends StatelessWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
   final IconData prefixIcon;
   final bool isPassword;
-  final String? Function(String?)? validator; // Add validator parameter
+  final String? errorText;
+  final Function(String)? onChanged;
 
   const CustomTextField({
-    super.key,
+    Key? key,
     required this.label,
     required this.hintText,
     required this.controller,
     required this.prefixIcon,
     this.isPassword = false,
-    this.validator, // Initialize validator
-  });
-
-  @override
-  _CustomTextFieldState createState() => _CustomTextFieldState();
-}
-
-class _CustomTextFieldState extends State<CustomTextField> {
-  bool _isPasswordVisible = false;
+    this.errorText,
+    this.onChanged, required String? Function(String? value) validator, required bool obscureText,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      obscureText: widget.isPassword ? !_isPasswordVisible : false,
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
       decoration: InputDecoration(
-        prefixIcon: Icon(widget.prefixIcon),
-        suffixIcon: widget.isPassword
-            ? IconButton(
-                icon: Icon(_isPasswordVisible
-                    ? Icons.visibility
-                    : Icons.visibility_off),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              )
-            : null,
+        labelText: label,
+        hintText: hintText,
+        prefixIcon: Icon(prefixIcon),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(
-            color: Colors.black,
-          ),
+          borderRadius: BorderRadius.circular(10),
         ),
-        labelText: widget.label,
-        hintText: widget.hintText,
+        errorText: errorText,
+        errorStyle: TextStyle(color: Colors.red),
       ),
-      validator: widget.validator, // Apply the validator
+      onChanged: onChanged,
     );
   }
 }

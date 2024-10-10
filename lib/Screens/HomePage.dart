@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: TextField(
                     controller: _searchController, // Set the controller
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: "Search for flour mills...",
                       prefixIcon: Icon(Icons.search, color: Colors.grey),
                       suffixIcon: Icon(Icons.filter_list, color: Colors.grey),
@@ -162,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       hintStyle: TextStyle(
                           color: Colors.black), // Set hint text color to white
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.black), // Set text color to white
                   )),
             ],

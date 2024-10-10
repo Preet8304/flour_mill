@@ -1,65 +1,107 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // Import the image picker
-import 'dart:io'; // Import for File
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfileEdit extends StatefulWidget {
   final String name;
   final String phone;
   final String location;
 
-  const ProfileEdit({
-    Key? key,
-    required this.name,
-    required this.phone,
-    required this.location,
-  }) : super(key: key);
+  const ProfileEdit({Key? key, required this.name, required this.phone, required this.location}) : super(key: key);
 
   @override
   _ProfileEditState createState() => _ProfileEditState();
 }
 
 class _ProfileEditState extends State<ProfileEdit> {
-  late TextEditingController _nameController;
-  late TextEditingController _phoneController;
-  late TextEditingController _locationController;
-  File? _image; // Variable to hold the selected image
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ImagePicker _picker = ImagePicker();
+
+  File? _image; // Variable to hold the image
+  String? _profilePicUrl; // Variable to hold the uploaded image URL
+  String _name = '';
+  String _phone = '';
+  String _location = '';
+  bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.name);
-    _phoneController = TextEditingController(text: widget.phone);
-    _locationController = TextEditingController(text: widget.location);
+    _name = widget.name;
+    _phone = widget.phone;
+    _location = widget.location;
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _locationController.dispose();
-    super.dispose();
-  }
-
+  // Image picking from the gallery
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.gallery); // Updated method
+    final pickedFile = await _picker.getImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // Update the image variable
+        _image = File(pickedFile.path); // Store the picked image
       });
     }
   }
 
-  void _saveProfile() {
-    // Here you can save the updated profile information
-    Navigator.pop(context, {
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'location': _locationController.text,
-      'image': _image?.path, // Pass the image path if available
-    });
+  // Save profile changes and upload image to Firebase
+  Future<void> _saveProfile() async {
+    User? currentUser = _auth.currentUser;
+
+    if (currentUser != null) {
+      String uid = currentUser.uid;
+
+      setState(() {
+        _isUploading = true; // Show loading indicator while uploading
+      });
+
+      try {
+        // If there's an image, upload it to Firebase Storage
+        if (_image != null) {
+          String fileName = '$uid/profile_pic.jpg'; // Create a unique file name
+          Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+          UploadTask uploadTask = storageRef.putFile(_image!);
+
+          TaskSnapshot snapshot = await uploadTask;
+          _profilePicUrl = await snapshot.ref.getDownloadURL(); // Get the download URL
+
+          print('Profile pic uploaded. URL: $_profilePicUrl');
+        }
+
+        // Update Firestore with the new profile details
+        await _firestore.collection('Customers').doc(uid).update({
+          'name': _name,
+          'phone': _phone,
+          'location': _location,
+          'profilePic': _profilePicUrl ?? '', // Store the image URL in Firestore
+        });
+
+        // If the user is a Provider, adjust the collection accordingly
+        await _firestore.collection('Providers').doc(uid).update({
+          'name': _name,
+          'phone': _phone,
+          'location': _location,
+          'profilePic': _profilePicUrl ?? '',
+        });
+
+        // Close the screen and pass the updated profile data back
+        Navigator.pop(context, {
+          'name': _name,
+          'phone': _phone,
+          'location': _location,
+        });
+      } catch (e) {
+        print('Error uploading profile: $e');
+        // You can show an error message to the user here
+      } finally {
+        setState(() {
+          _isUploading = false; // Stop loading indicator
+        });
+      }
+    }
   }
 
   @override
@@ -67,65 +109,48 @@ class _ProfileEditState extends State<ProfileEdit> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
-        backgroundColor: Colors.deepPurple, // Change app bar color
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveProfile,
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: _pickImage, // Allow tapping to pick an image
+              onTap: _pickImage, // Tap to pick an image
               child: CircleAvatar(
                 radius: 60,
                 backgroundImage: _image != null
-                    ? FileImage(_image!) // Use the selected image
-                    : const NetworkImage(
-                        'https://d2qp0siotla746.cloudfront.net/img/use-cases/profile-picture/template_3.jpg'), // Default image
-                child: _image == null
-                    ? const Icon(Icons.camera_alt,
-                        size: 30, color: Colors.white) // Icon for default image
-                    : null,
+                    ? FileImage(_image!)
+                    : const AssetImage('assets/default_profile.png') as ImageProvider,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Full Name',
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors
-                    .grey[200]!, // Use null assertion to resolve the error
-              ),
+              decoration: const InputDecoration(labelText: 'Full Name'),
+              onChanged: (value) {
+                _name = value;
+              },
+              controller: TextEditingController(text: _name),
             ),
-            const SizedBox(height: 16),
             TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: 'Mobile Number',
-                border: OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors
-                    .grey[200]!, // Use null assertion to resolve the error
-              ),
+              decoration: const InputDecoration(labelText: 'Mobile Number'),
+              onChanged: (value) {
+                _phone = value;
+              },
+              controller: TextEditingController(text: _phone),
             ),
-            const SizedBox(height: 16),
             TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'Location',
-                border: OutlineInputBorder(),
-                filled: true,
-                fillColor: Colors
-                    .grey[200]!, // Use null assertion to resolve the error
-              ),
+              decoration: const InputDecoration(labelText: 'Location'),
+              onChanged: (value) {
+                _location = value;
+              },
+              controller: TextEditingController(text: _location),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isUploading ? null : _saveProfile, // Disable the button if uploading
+              child: _isUploading
+                  ? const CircularProgressIndicator() // Show progress if uploading
+                  : const Text('Save Changes'),
             ),
           ],
         ),

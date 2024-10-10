@@ -9,7 +9,7 @@ void main() {
 }
 
 class PhoneVerification extends StatelessWidget {
-  TextEditingController phoneController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
   PhoneVerification({Key? key});
 
@@ -55,7 +55,8 @@ class PhoneVerification extends StatelessWidget {
                   hintText: "Enter Phone Number",
                   controller: phoneController,
                   prefixIcon: Icons.phone,
-                  isPassword: false,
+                  obscureText: false,
+                  isPassword: false, validator: (String? value) {  },
                 ),
                 const SizedBox(height: 20),
                 CustomButton(

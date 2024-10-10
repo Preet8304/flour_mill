@@ -34,19 +34,19 @@ class AppbarWidget extends StatelessWidget {
               child: const Icon(CupertinoIcons.bars),
             ),
           ),
-          InkWell(borderRadius: BorderRadius.circular(30),
-            onTap: () {},
-
-                child: IconButton(
-                  icon: const Icon(Icons.account_circle,size: 30,),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProfileScreen()));
-                    },
-                    )),
-
+          InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () {},
+              child: IconButton(
+                icon: const Icon(
+                  Icons.account_circle,
+                  size: 30,
+                ),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen()));
+                },
+              )),
         ],
       ),
     );

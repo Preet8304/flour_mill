@@ -8,6 +8,8 @@ import 'package:flour_mill/UIComponents/CustomTextField.dart';
 import 'package:flour_mill/UIComponents/CustomToast.dart';
 import 'package:flour_mill/pages/LoginPage.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
 
@@ -28,6 +30,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
   int _selectedTabIndex = 0;
   final List<String> _tabTitles = ['Customer', 'Provider'];
+
+  final _formKey = GlobalKey<FormState>();
+
+  String? _nameError;
+  String? _emailError;
+  String? _phoneError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -52,71 +61,74 @@ class _SignUpPageState extends State<SignUpPage> {
                   color: Colors.black)),
           centerTitle: true,
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 60.0, 15.0, 0.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircleAvatar(
-                    radius: 70,
-                    backgroundImage: AssetImage('lib/assets/profile_image.jpg')),
-                const SizedBox(height: 40),
-                DefaultTabController(
-                  length: _tabTitles.length,
-                  initialIndex: _selectedTabIndex,
-                  child: Column(
-                    children: [
-                      TabBar(
-                        onTap: (index) {
-                          setState(() {
-                            _selectedTabIndex = index;
-                          });
-                        },
-                        tabs: _tabTitles
-                            .map((title) => Tab(text: title))
-                            .toList(),
-                        indicatorColor: Colors.blue,
-                        labelColor: Colors.blue,
-                        unselectedLabelColor: Colors.black,
-                      ),
-                      const SizedBox(height: 30.0),
-                      SizedBox(
-                        height: 240.0,
-                        child: TabBarView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [
-                            buildCustomerFields(),
-                            buildProviderFields(),
-                          ],
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(15.0, 60.0, 15.0, 0.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircleAvatar(
+                      radius: 70,
+                      backgroundImage: AssetImage('lib/assets/profile_image.jpg')),
+                  const SizedBox(height: 40),
+                  DefaultTabController(
+                    length: _tabTitles.length,
+                    initialIndex: _selectedTabIndex,
+                    child: Column(
+                      children: [
+                        TabBar(
+                          onTap: (index) {
+                            setState(() {
+                              _selectedTabIndex = index;
+                            });
+                          },
+                          tabs: _tabTitles
+                              .map((title) => Tab(text: title))
+                              .toList(),
+                          indicatorColor: Colors.blue,
+                          labelColor: Colors.blue,
+                          unselectedLabelColor: Colors.black,
                         ),
+                        const SizedBox(height: 30.0),
+                        SizedBox(
+                          height: 240.0,
+                          child: TabBarView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              buildCustomerFields(),
+                              buildProviderFields(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24.0),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CustomButton(
+                      label: 'Sign Up',
+                      icon: Icons.check,
+                      onPressed: () => _handleSignUp(context),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Already have an account?'),
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginPage())),
+                        child: const Text('Login'),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24.0),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CustomButton(
-                    label: 'Sign Up',
-                    icon: Icons.check,
-                    onPressed: () => _handleSignUp(context),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Already have an account?'),
-                    TextButton(
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginPage())),
-                      child: const Text('Login'),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -130,32 +142,61 @@ class _SignUpPageState extends State<SignUpPage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CustomTextField(
-            label: 'Email',
-            hintText: 'Enter your email',
-            controller: _emailController,
-            prefixIcon: Icons.mail,
-            validator: _validateEmail,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CustomTextField(
-            label: 'Password',
-            hintText: 'Enter a strong password',
-            controller: _passwordController,
-            prefixIcon: Icons.lock,
-            isPassword: true,
-            validator: _validatePassword,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CustomTextField(
-            label: 'Name',
-            hintText: 'Enter your name',
             controller: _nameController,
+            label: "Full Name",
+            hintText: "Enter your full name",
+            errorText: _nameError,
             prefixIcon: Icons.person,
-            validator: _validateName,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Full name is required';
+              }
+              return null;
+            },
+            obscureText: false,
+            onChanged: (value) => validateName(value),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CustomTextField(
+            controller: _emailController,
+            label: "Email",
+            hintText: "Enter your email",
+            errorText: _emailError,
+            prefixIcon: Icons.email,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Email is required';
+              }
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                return 'Enter a valid email address';
+              }
+              return null;
+            },
+            obscureText: false,
+            onChanged: (value) => validateEmail(value),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CustomTextField(
+            controller: _passwordController,
+            label: "Password",
+            hintText: "Enter your password",
+            errorText: _passwordError,
+            prefixIcon: Icons.lock,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Password is required';
+              }
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters long';
+              }
+              return null;
+            },
+            onChanged: (value) => validatePassword(value),
+            obscureText: true,
           ),
         ),
       ],
@@ -168,63 +209,106 @@ class _SignUpPageState extends State<SignUpPage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CustomTextField(
-            label: 'Provider Email',
-            hintText: 'Enter Provider Email',
             controller: _companyEmailController,
-            prefixIcon: Icons.mail,
-            validator: _validateEmail,
+            label: "Provider Email",
+            prefixIcon: Icons.email,
+            hintText: "Enter Provider Email",
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Provider Email is required';
+              }
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                return 'Enter a valid email address';
+              }
+              return null;
+            },
+            errorText: _emailError,
+            onChanged: (value) => validateEmail(value),
+            obscureText: false, // Add this line
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CustomTextField(
-            label: 'Provider Password',
-            hintText: 'Enter Provider password',
             controller: _companyPasswordController,
+            label: "Provider Password",
+            hintText: "Enter Provider password",
+            errorText: _passwordError,
+            obscureText: true,
             prefixIcon: Icons.lock,
-            isPassword: true,
-            validator: _validatePassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Provider Password is required';
+              }
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters long';
+              }
+              return null;
+            },
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: CustomTextField(
-            label: 'Provider Name',
-            hintText: 'Enter Provider name',
             controller: _companyNameController,
+            label: "Provider Name",
+            hintText: "Enter Provider name",
+            errorText: _nameError,
+            obscureText: false,
             prefixIcon: Icons.business,
-            validator: _validateName,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Provider Name is required';
+              }
+              return null;
+            },
+            onChanged: (value) => validateName(value),
           ),
         ),
       ],
     );
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter an email';
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-      return 'Please enter a valid email';
-    }
-    return null;
+  void validateName(String value) {
+    setState(() {
+      _nameError = value.isEmpty ? 'Name is required' : null;
+    });
   }
 
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a password';
-    }
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters';
-    }
-    return null;
+  void validateEmail(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _emailError = 'Email is required';
+      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+        _emailError = 'Enter a valid email address';
+      } else {
+        _emailError = null;
+      }
+    });
   }
 
-  String? _validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a name';
-    }
-    return null;
+  void validatePhone(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _phoneError = 'Phone number is required';
+      } else if (!RegExp(r'^\+?[0-9]{10,14}$').hasMatch(value)) {
+        _phoneError = 'Enter a valid phone number';
+      } else {
+        _phoneError = null;
+      }
+    });
+  }
+
+  void validatePassword(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _passwordError = 'Password is required';
+      } else if (value.length < 6) {
+        _passwordError = 'Password must be at least 6 characters long';
+      } else {
+        _passwordError = null;
+      }
+    });
   }
 
   void _handleSignUp(BuildContext context) async {
@@ -259,18 +343,29 @@ class _SignUpPageState extends State<SignUpPage> {
 
     try {
       User? user = await _auth.signUpWithEmailAndPassword(email, password);
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      CollectionReference userCollection;
 
       if (user != null) {
         // Store user details in Firebase Realtime Database
-        await _dbRef.child(user.uid).set({
+        if (userType == 'customer') {
+          userCollection = firestore.collection('Customers');
+        } else {
+          userCollection = firestore.collection('Providers');
+        }
+
+        // Store user details in the respective Firestore collection
+        await userCollection.doc(user.uid).set({
           'email': email,
           'name': name,
           'userType': userType,
+          'createdAt': Timestamp.now(), // Add timestamp for record creation
         });
+
         Navigator.pop(context); // Dismiss the dialog
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       }
     } catch (error) {
