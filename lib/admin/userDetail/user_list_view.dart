@@ -7,8 +7,8 @@ import 'package:flour_mill/firebase auth service/firebase_getuser.dart';
 
 class UserListView extends StatelessWidget {
   final FirestoreService _firestoreService = FirestoreService();
-
-  UserListView({Key? key}) : super(key: key);
+  final String searchQuery;
+  UserListView({Key? key, this.searchQuery = ''}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,15 @@ class UserListView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final users = snapshot.data!.docs;
+        var users = snapshot.data!.docs;
+
+             if (searchQuery.isNotEmpty) {
+            users = users.where((user) {
+            final userData = user.data() as Map<String, dynamic>;
+            final name = userData['name'] as String? ?? '';
+            return name.toLowerCase().contains(searchQuery.toLowerCase());
+          }).toList();
+        }
 
         return ListView.builder(
           itemCount: users.length,

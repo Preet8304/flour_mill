@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class VendorListView extends StatelessWidget {
-  const VendorListView({Key? key}) : super(key: key);
+  final String searchQuery;
+  const VendorListView({Key? key, this.searchQuery = ''}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,15 @@ class VendorListView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final vendors = snapshot.data!.docs;
+        var vendors = snapshot.data!.docs;
+
+          if (searchQuery.isNotEmpty) {
+          vendors = vendors.where((vendor) {
+            final vendorData = vendor.data() as Map<String, dynamic>;
+            final shopName = vendorData['shopname'] as String? ?? '';
+            return shopName.toLowerCase().contains(searchQuery.toLowerCase());
+          }).toList();
+        }
 
         return ListView.builder(
           itemCount: vendors.length,

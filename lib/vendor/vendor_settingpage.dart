@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flour_mill/pages/LoginPage.dart';
 import 'package:flutter/material.dart';
 
-class SettingPage extends StatelessWidget {
+class VendorSettingPage extends StatelessWidget {
   final Map<String, dynamic> shopData;
 
-  const SettingPage({Key? key, required this.shopData}) : super(key: key);
+  const VendorSettingPage({Key? key, required this.shopData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

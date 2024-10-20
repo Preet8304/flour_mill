@@ -1,4 +1,4 @@
- import 'package:flour_mill/vendor/settingpage.dart';
+ import 'package:flour_mill/vendor/vendor_settingpage.dart';
 import 'package:flutter/material.dart';
 
 class VendorHomepage extends StatefulWidget {
@@ -42,7 +42,7 @@ class _VendorHomepageState extends State<VendorHomepage> {
       case 0:
         return Center(child: Text('Orders Page'));
       case 1:
-        return  SettingPage(shopData: widget.shopData);
+        return  VendorSettingPage(shopData: widget.shopData);
       default:
         return Center(child: Text('Page not found'));
     }
