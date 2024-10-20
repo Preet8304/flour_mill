@@ -6,7 +6,7 @@ class FlourMillData {
     return [
       FlourMill(
         imageUrl: "lib/assets/mills/mill1.png",
-        deliveryInfo: '23 mins • 1 km',
+        deliveryInfo: '20 mins • 1 km',
         tag: 'NEAR & FAST',
         name: 'Delhi Flour Mill',
         rating: 4.6,
@@ -14,9 +14,9 @@ class FlourMillData {
       ),
       FlourMill(
         imageUrl: "lib/assets/mills/mill2.jpeg",
-        deliveryInfo: '15 mins • 2 km',
+        deliveryInfo: '25 mins • 2 km',
         tag: 'ON TIME DELIVERY',
-        name: 'Mumbai Flour Mill',
+        name: 'Dinesh Flour Mill',
         rating: 4.5 ,
         type: 'Flour • Grains',
       ),
