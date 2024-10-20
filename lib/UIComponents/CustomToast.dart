@@ -15,8 +15,8 @@ class CustomToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      showToast(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showToast();
     });
 
     return Scaffold(
@@ -24,12 +24,13 @@ class CustomToast extends StatelessWidget {
     );
   }
 
-  void showToast(BuildContext context) {
+  void showToast() {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
+      backgroundColor: Colors.black87,
       textColor: Colors.white,
       fontSize: 16.0,
     );

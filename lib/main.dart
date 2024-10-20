@@ -1,8 +1,10 @@
-import 'package:flour_mill/Screens/HomePage.dart';
+import 'package:flour_mill/admin/admin_homepage.dart';
 import 'package:flour_mill/pages/SignUpPage.dart';
+import 'package:flour_mill/vendor/shopregistrationform.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'Screens/HomePage.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,28 +26,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      // title: " Mill to Door",
-      // theme: ThemeData(
-      //   scaffoldBackgroundColor: Colors.white,
-      // ),
-      // debugShowCheckedModeBanner: false,
-      // // routes: {"/": (context) => const SignUpPage()},
-      home:  CheckAuth(),
+    return MaterialApp(
+      title: " Mill to Door",
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
+      ),
+      debugShowCheckedModeBanner: false,
+      routes: {
+        "/":(context)=> 
+        //  HomePage(),
+        // ShopRegistrationForm(),
+        SignUpPage(),
+        //AdminHomepage(),
+        },
     );
-  }
-}
-
-class CheckAuth extends StatelessWidget {
-  const CheckAuth({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      return const HomePage();
-    } else {
-      return const SignUpPage();
-    }
   }
 }

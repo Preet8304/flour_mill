@@ -1,16 +1,15 @@
-import 'package:flour_mill/UIComponents/CustomButton.dart';
-import 'package:flour_mill/pages/OTPVerification.dart';
 import 'package:flutter/material.dart';
-import 'package:flour_mill/UIComponents/CustomTextField.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flour_mill/UIComponents/CustomButton.dart';
+import 'package:flour_mill/UIComponents/CustomTextField.dart';
+import 'package:flour_mill/pages/OTPVerification.dart';
 
 void main() {
   runApp(PhoneVerification());
 }
 
 class PhoneVerification extends StatelessWidget {
-
-  TextEditingController phoneController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
   PhoneVerification({Key? key});
 
@@ -55,21 +54,28 @@ class PhoneVerification extends StatelessWidget {
                   label: "Phone Number",
                   hintText: "Enter Phone Number",
                   controller: phoneController,
-                  prefixIcon: Icons.phone,
-                  obscureText: false,
-                  isPassword: false, validator: (String? value) {  },
-
+                  prefixIcon: Icons.phone, 
+                  isPassword: false, // Not a password field
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a phone number';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
                 CustomButton(
-                    label: "Send OTP",
-                    icon: Icons.send,
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => OTPVerification()));
-                    })
+                  label: "Send OTP",
+                  icon: Icons.send,
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OTPVerification(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),

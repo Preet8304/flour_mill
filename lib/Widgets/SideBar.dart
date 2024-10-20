@@ -1,10 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flour_mill/Screens/OrderHistory.dart';
 import 'package:flour_mill/Screens/ProfileScreen.dart';
 import 'package:flour_mill/model/OrderHistoryItem.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../pages/LoginPage.dart';
 
@@ -20,6 +21,9 @@ class SideBar extends StatefulWidget {
 class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  String _userName = 'Loading...';
+  String _userEmail = 'Loading...';
+  String? _profileImageUrl;
 
   @override
   void initState() {
@@ -33,6 +37,41 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
       curve: Curves.easeInOut,
     );
     _controller.forward();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('Customers')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          setState(() {
+            _userName = userDoc['name'] ?? 'Unknown';
+            _userEmail = userDoc['email'] ?? user.email ?? 'Unknown';
+             _profileImageUrl = userDoc['profilePic'];
+
+          });
+        } else {
+          setState(() {
+            _userName = user.displayName ?? 'Unknown';
+            _userEmail = user.email ?? 'Unknown';
+            _profileImageUrl = user.photoURL;
+
+          });
+        }
+      } catch (e) {
+        print('Error loading user data: $e');
+        setState(() {
+          _userName = 'Error loading';
+          _userEmail = 'Error loading';
+        });
+      }
+    }
   }
 
   @override
@@ -41,22 +80,12 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  void _logout()async {
-      {
-      // Clear the Firebase session
-      await FirebaseAuth.instance.signOut();
-
-      // Clear the 'isLoggedIn' flag from SharedPreferences
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', false);
-
-      // Navigate the user back to the LoginPage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
-    }
-
+  void _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 
   @override
@@ -75,33 +104,27 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
           child: ListView(
             children: [
               UserAccountsDrawerHeader(
-                accountName: AnimatedTextKit(
-                  animatedTexts: [
-                    TypewriterAnimatedText(
-                      'Shizuka',
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      speed: const Duration(milliseconds: 100),
-                    ),
-                  ],
-                  totalRepeatCount: 1,
-                  displayFullTextOnTap: true,
+                accountName: Text(
+                  _userName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                accountEmail: const Text("Nobitanobi88@gmail.com"),
+                accountEmail: Text(_userEmail),
                 currentAccountPicture: Hero(
                   tag: 'profilePic',
                   child: CircleAvatar(
-                    child: ClipOval(
-                      child: Image.network(
-                        'https://d2qp0siotla746.cloudfront.net/img/use-cases/profile-picture/template_3.jpg',
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.cover,
-                      ),
+                    backgroundColor: Colors.grey[200],
+                    child: _buildProfileImage(),
+                //     backgroundColor: Colors.grey[200],
+                // backgroundImage: _profileImageUrl != null
+                //     ? CachedNetworkImageProvider(_profileImageUrl!)
+                //     : null,
+                // child: _profileImageUrl == null
+                //     ? Image.asset('lib/assets/profile_image.jpg')
+                //     : null, 
                     ),
-                  ),
                 ),
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -164,6 +187,29 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
     );
   }
 
+
+Widget _buildProfileImage() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: _profileImageUrl != null
+          ? CachedNetworkImage(
+              key: ValueKey(_profileImageUrl),
+              imageUrl: _profileImageUrl!,
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            )
+          : Image.asset('lib/assets/profile_image.jpg', fit: BoxFit.cover),
+    );
+  }
   Widget _buildAnimatedListTile({
     required IconData icon,
     required String title,
@@ -178,7 +224,8 @@ class _SideBarState extends State<SideBar> with SingleTickerProviderStateMixin {
       onTap: onTap,
       hoverColor: Colors.blue[200],
       splashColor: Colors.blue[300],
-      trailing: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.blue[600]),
+      trailing:
+          Icon(Icons.arrow_forward_ios, size: 14, color: Colors.blue[600]),
     );
   }
 }

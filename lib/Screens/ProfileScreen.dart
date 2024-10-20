@@ -1,94 +1,72 @@
+// import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:flutter/material.dart';
-// import 'package:image_picker/image_picker.dart';
-// import 'dart:io';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart'; // Firebase Storage for profile pictures
-// import 'ProfileEdit.dart'; // Import the ProfileEdit screen
-//
+// import 'ProfileEdit.dart'; // Import ProfileEdit
+// import 'info_tile.dart'; // Import InfoTile
+
 // class ProfileScreen extends StatefulWidget {
 //   const ProfileScreen({super.key});
-//
+
 //   @override
 //   _ProfileScreenState createState() => _ProfileScreenState();
 // }
-//
+
 // class _ProfileScreenState extends State<ProfileScreen> {
 //   final FirebaseAuth _auth = FirebaseAuth.instance;
 //   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 //   User? _currentUser;
-//   File? _image;
 //   String _name = "User";
 //   String _phone = "Not set";
 //   String _location = "Enter your address"; // Default location
 //   String _userType = ''; // Determine if the user is Customer or Provider
-//   String _profilePicUrl = '';
-//
+//   String _profilePicUrl = ''; // Store the profile picture URL
+
 //   @override
 //   void initState() {
 //     super.initState();
 //     _getProfileData(); // Fetch profile details when the screen loads
 //   }
-//
+
 //   Future<void> _getProfileData() async {
 //     _currentUser = _auth.currentUser;
-//
+
 //     if (_currentUser != null) {
 //       // Check if the user is a Customer or Provider
-//       DocumentSnapshot userDoc = await _firestore.collection('Customers').doc(_currentUser!.uid).get();
-//
+//       DocumentSnapshot userDoc =
+//           await _firestore.collection('Customers').doc(_currentUser!.uid).get();
+
 //       if (userDoc.exists) {
 //         setState(() {
 //           _userType = 'Customer';
 //         });
 //       } else {
-//         userDoc = await _firestore.collection('Providers').doc(_currentUser!.uid).get();
+//         userDoc = await _firestore
+//             .collection('Providers')
+//             .doc(_currentUser!.uid)
+//             .get();
 //         if (userDoc.exists) {
 //           setState(() {
 //             _userType = 'Provider';
 //           });
 //         }
 //       }
-//
+
 //       // Now fetch the common user details based on user type
 //       if (userDoc.exists) {
 //         setState(() {
 //           _name = userDoc.get('name') ?? 'Unknown';
-//           _phone = userDoc.get('phone') ?? 'Not set'; // Initialize with 'Not set'
-//           _location = userDoc.get('location') ?? 'Enter your address'; // Initialize with default
-//           _profilePicUrl = userDoc.get('profilePic') ?? '';
+//           _phone =
+//               userDoc.get('phone') ?? 'Not set'; // Initialize with 'Not set'
+//           _location = userDoc.get('location') ??
+//               'Enter your address'; // Initialize with default
+//           _profilePicUrl =
+//               userDoc.get('profilePic') ?? ''; // Fetch the profile pic URL
 //         });
 //       }
 //     }
 //   }
-//
-//   Future<void> _pickImage() async {
-//     final picker = ImagePicker();
-//     final pickedFile = await picker.getImage(source: ImageSource.gallery);
-//
-//     if (pickedFile != null && _currentUser != null) {
-//       File imageFile = File(pickedFile.path);
-//       String fileName = '${_currentUser!.uid}/profile_pic.jpg'; // Create a unique file name
-//
-//       // Upload to Firebase Storage
-//       Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
-//       UploadTask uploadTask = storageRef.putFile(imageFile);
-//
-//       TaskSnapshot snapshot = await uploadTask;
-//       String downloadUrl = await snapshot.ref.getDownloadURL(); // Get the download URL
-//
-//       // Update Firestore with the new profile picture URL
-//       await _firestore.collection(_userType == 'Customer' ? 'Customers' : 'Providers').doc(_currentUser!.uid).update({
-//         'profilePic': downloadUrl,
-//       });
-//
-//       // Update the local state with the new profile picture URL
-//       setState(() {
-//         _profilePicUrl = downloadUrl;
-//       });
-//     }
-//   }
-//
+
 //   void _editProfile() async {
 //     final result = await Navigator.push(
 //       context,
@@ -96,31 +74,23 @@
 //         builder: (context) => ProfileEdit(
 //           name: _name,
 //           phone: _phone,
-//           location: _location, userType: '',
+//           location: _location,
+//           userType: _userType,
+//           uid: _currentUser!.uid, // Add this line
 //         ),
 //       ),
 //     );
-//
-//     if (result != null && _currentUser != null) {
-//       setState(() {
-//         _name = result['name'];
-//         _phone = result['phone'];
-//         _location = result['location'];
-//       });
-//
-//       // Update Firestore with the new details
-//       await _firestore.collection(_userType == 'Customer' ? 'Customers' : 'Providers').doc(_currentUser!.uid).update({
-//         'name': _name,
-//         'phone': _phone,
-//         'location': _location,
-//       });
+
+//     if (result != null) {
+//       await _getProfileData(); // Refresh the profile data
 //     }
 //   }
-//
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
+//         automaticallyImplyLeading: false, // This line removes the back button
 //         title: const Text('Profile'),
 //         actions: [
 //           IconButton(
@@ -135,16 +105,17 @@
 //           crossAxisAlignment: CrossAxisAlignment.start,
 //           children: [
 //             GestureDetector(
-//               onTap: _pickImage, // Allow tapping to pick an image
+//               onTap: () {}, // Allow tapping to pick an image
 //               child: Row(
 //                 children: [
 //                   CircleAvatar(
 //                     radius: 40,
-//                     backgroundImage: _image != null
-//                         ? FileImage(_image!) // Use the selected image
-//                         : (_profilePicUrl.isNotEmpty
-//                         ? NetworkImage(_profilePicUrl) // Use the profile picture from Firebase
-//                         : const AssetImage('assets/default_profile.png')) as ImageProvider,
+//                     child:_buildProfileImage(),
+//                     // backgroundImage: _profilePicUrl.isNotEmpty
+//                     //     ? NetworkImage(
+//                     //         _profilePicUrl) // Use the profile picture from Firebase
+//                     //     : const AssetImage('lib/assets/profile_image.jpg')
+//                     //         as ImageProvider,
 //                   ),
 //                   const SizedBox(width: 16),
 //                   Expanded(
@@ -160,7 +131,7 @@
 //                         ),
 //                         const Text(
 //                           "Let's explore together",
-//                           style:  TextStyle(
+//                           style: TextStyle(
 //                             color: Colors.blueGrey,
 //                           ),
 //                         ),
@@ -195,7 +166,8 @@
 //               title: _location,
 //               subtitle: 'Location',
 //             ),
-//             if (_userType == 'Provider') // Show extra info if user is a Provider
+//             if (_userType ==
+//                 'Provider') // Show extra info if user is a Provider
 //               InfoTile(
 //                 icon: Icons.work_outline,
 //                 title: "Provider Info",
@@ -207,60 +179,35 @@
 //     );
 //   }
 // }
-//
-// class InfoTile extends StatelessWidget {
-//   final IconData icon;
-//   final String title;
-//   final String subtitle;
-//
-//   const InfoTile({
-//     super.key,
-//     required this.icon,
-//     required this.title,
-//     required this.subtitle,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(vertical: 8.0),
-//       child: Row(
-//         children: [
-//           Icon(
-//             icon,
-//             size: 40,
-//             color: Colors.blueGrey,
-//           ),
-//           const SizedBox(width: 16),
-//           Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 title,
-//                 style: const TextStyle(
-//                   fontSize: 18,
+
+// Widget _buildProfileImage() {
+//     return AnimatedSwitcher(
+//       duration: const Duration(milliseconds: 300),
+//       child: _profilePicUrl != null
+//           ? CachedNetworkImage(
+//               key: ValueKey(_profilePicUrl),
+//               imageUrl: _profilePicUrl!,
+//               imageBuilder: (context, imageProvider) => Container(
+//                 decoration: BoxDecoration(
+//                   shape: BoxShape.circle,
+//                   image: DecorationImage(
+//                     image: imageProvider,
+//                     fit: BoxFit.cover,
+//                   ),
 //                 ),
 //               ),
-//               Text(
-//                 subtitle,
-//                 style: const TextStyle(
-//                   color: Colors.blueGrey,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
+//               placeholder: (context, url) => const CircularProgressIndicator(),
+//               errorWidget: (context, url, error) => const Icon(Icons.error),
+//             )
+//           : Image.asset('lib/assets/profile_image.jpg', fit: BoxFit.cover),
 //     );
 //   }
-// }
-//
-//
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'ProfileEdit.dart'; // Import ProfileEdit
-import 'info_tile.dart'; // Import InfoTile
+import 'package:cached_network_image/cached_network_image.dart';
+import 'ProfileEdit.dart';
+import 'info_tile.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -275,45 +222,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   String _name = "User";
   String _phone = "Not set";
-  String _location = "Enter your address"; // Default location
-  String _userType = ''; // Determine if the user is Customer or Provider
-  String _profilePicUrl = ''; // Store the profile picture URL
+  String _location = "Enter your address";
+  String _userType = '';
+  String? _profilePicUrl;
 
   @override
   void initState() {
     super.initState();
-    _getProfileData(); // Fetch profile details when the screen loads
+    _getProfileData();
   }
 
   Future<void> _getProfileData() async {
     _currentUser = _auth.currentUser;
 
     if (_currentUser != null) {
-      // Check if the user is a Customer or Provider
       DocumentSnapshot userDoc = await _firestore.collection('Customers').doc(_currentUser!.uid).get();
 
       if (userDoc.exists) {
         setState(() {
           _userType = 'Customer';
+          _name = userDoc.get('name') ?? 'Unknown';
+          _phone = userDoc.get('phone') ?? 'Not set';
+          _location = userDoc.get('location') ?? 'Enter your address';
+          _profilePicUrl = userDoc.get('profilePic');
         });
       } else {
+        // Check Providers collection if not found in Customers
         userDoc = await _firestore.collection('Providers').doc(_currentUser!.uid).get();
         if (userDoc.exists) {
           setState(() {
             _userType = 'Provider';
+            _name = userDoc.get('name') ?? 'Unknown';
+            _phone = userDoc.get('phone') ?? 'Not set';
+            _location = userDoc.get('location') ?? 'Enter your address';
+            _profilePicUrl = userDoc.get('profilePic');
           });
         }
       }
 
-      // Now fetch the common user details based on user type
-      if (userDoc.exists) {
-        setState(() {
-          _name = userDoc.get('name') ?? 'Unknown';
-          _phone = userDoc.get('phone') ?? 'Not set'; // Initialize with 'Not set'
-          _location = userDoc.get('location') ?? 'Enter your address'; // Initialize with default
-          _profilePicUrl = userDoc.get('profilePic') ?? ''; // Fetch the profile pic URL
-        });
-      }
+      // Preload the image if URL is available
+      // if (_profilePicUrl != null) {
+      //   await precacheImage(CachedNetworkImageProvider(_profilePicUrl!), context);
+      // }
     }
   }
 
@@ -325,35 +275,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
           name: _name,
           phone: _phone,
           location: _location,
+          userType: _userType,
+          uid: _currentUser!.uid,
         ),
       ),
     );
 
-    if (result != null && _currentUser != null) {
-      setState(() {
-        _name = result['name'];
-        _phone = result['phone'];
-        _location = result['location'];
-      });
-
-      // Update Firestore with the new details
-      await _firestore.collection(_userType == 'Customer' ? 'Customers' : 'Providers').doc(_currentUser!.uid).update({
-        'name': _name,
-        'phone': _phone,
-        'location': _location,
-      });
+    if (result != null) {
+      await _getProfileData(); // Refresh the profile data
     }
+  }
+
+  Widget _buildProfileImage() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: _profilePicUrl != null
+          ? CachedNetworkImage(
+              key: ValueKey(_profilePicUrl),
+              imageUrl: _profilePicUrl!,
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            )
+          : Image.asset('lib/assets/profile_image.jpg', fit: BoxFit.cover),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: _editProfile, // Navigate to ProfileEdit
+            onPressed: _editProfile,
           ),
         ],
       ),
@@ -368,9 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundImage: _profilePicUrl.isNotEmpty
-                        ? NetworkImage(_profilePicUrl) // Use the profile picture from Firebase
-                        : const AssetImage('assets/default_profile.png') as ImageProvider,
+                    child: _buildProfileImage(),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -378,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Hi, $_name", // Display the name
+                          "Hi, $_name",
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -394,7 +357,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _userType == 'Customer'
                               ? "Customer since 2021"
                               : "Provider since 2021",
-                          // Display based on user type
                           style: const TextStyle(
                             color: Colors.blueGrey,
                           ),
@@ -421,7 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: _location,
               subtitle: 'Location',
             ),
-            if (_userType == 'Provider') // Show extra info if user is a Provider
+            if (_userType == 'Provider')
               InfoTile(
                 icon: Icons.work_outline,
                 title: "Provider Info",

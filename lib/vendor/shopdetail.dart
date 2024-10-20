@@ -15,11 +15,15 @@ class ShopDetailsPage extends StatelessWidget {
     print('Email: ${shopRegistration.email}');
     print('Address: ${shopRegistration.address}');
     print('Operating Hours: ${shopRegistration.operatinghours}');
-    print('Flours: ${shopRegistration.flours}');
+    print('Flour Types and Prices:');
+    for (var flour in shopRegistration.flourTypes) {
+      print('${flour.name}: ${flour.price}');
+    }
     print('Image: ${shopRegistration.image}');
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Shop Details'),
         centerTitle: true,
       ),
@@ -36,7 +40,7 @@ class ShopDetailsPage extends StatelessWidget {
             _buildDetailItem('Email', shopRegistration.email),
             _buildDetailItem('Address', shopRegistration.address),
             _buildDetailItem('Operating Hours', shopRegistration.operatinghours),
-            _buildDetailItem('Flours Available', shopRegistration.flours),
+            _buildDetailItem('Flours Available',  _formatFlours(shopRegistration.flourTypes)),
             if (shopRegistration.image != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -58,6 +62,10 @@ class ShopDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatFlours(List<FlourType> flours) {
+    return flours.map((flour) => '${flour.name}: ${flour.price}').join(', ');
   }
 
   Widget _buildDetailItem(String label, String value) {

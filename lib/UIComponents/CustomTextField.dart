@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final bool isPassword;
   final String? errorText;
   final Function(String)? onChanged;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     Key? key,
@@ -15,27 +16,47 @@ class CustomTextField extends StatelessWidget {
     required this.hintText,
     required this.controller,
     required this.prefixIcon,
-    this.isPassword = false,
+    required this.isPassword,
     this.errorText,
-    this.onChanged, required String? Function(String? value) validator, required bool obscureText,
+    this.onChanged,
+    this.validator,
   }) : super(key: key);
 
   @override
+  _CustomTextFieldState createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  bool _isObscured = true;
+
+  @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword,
+    return TextFormField(
+      controller: widget.controller,
+      obscureText: widget.isPassword ? _isObscured : false,
+      validator: widget.validator,
       decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
-        prefixIcon: Icon(prefixIcon),
+        labelText: widget.label,
+        hintText: widget.hintText,
+        prefixIcon: Icon(widget.prefixIcon),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        errorText: errorText,
-        errorStyle: TextStyle(color: Colors.red),
+        errorText: widget.errorText,
+        suffixIcon: widget.isPassword
+            ? IconButton(
+                icon: Icon(
+                  _isObscured ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isObscured = !_isObscured;
+                  });
+                },
+              )
+            : null,
       ),
-      onChanged: onChanged,
+      onChanged: widget.onChanged,
     );
   }
 }

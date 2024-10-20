@@ -37,6 +37,13 @@ class _ItemCardWidgetState extends State<ItemCardWidget> {
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(child: CircularProgressIndicator());
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.error);
+            },
                 ),
               ),
               const SizedBox(width: 16),

@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flour_mill/Screens/orderdetailspage.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class OrderHistoryPage extends StatefulWidget {
@@ -17,43 +18,36 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     _loadOrderHistory();
   }
 
+
   Future<void> _loadOrderHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> orderHistory = prefs.getStringList('orderHistory') ?? [];
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('Customers')
+        .doc(user.uid)
+        .collection('Orders')
+        .orderBy('orderDate', descending: true)
+        .get();
+
     setState(() {
-      _orderHistory = orderHistory.map((orderString) {
-        try {
-          Map<String, dynamic> order = json.decode(orderString);
-          order['orderId'] ??= 'Unknown';
-          order['totalPrice'] ??= 0.0;
-          order['date'] ??= DateTime.now().toIso8601String();
-          // Remove this line: order['items'] ??= [];
-          return order;
-        } catch (e) {
-          print('Error decoding order: $e');
-          return {
-            'orderId': 'Error',
-            'totalPrice': 0.0,
-            'date': DateTime.now().toIso8601String(),
-            'items': {} // or [] if you prefer
-          };
-        }
+      _orderHistory = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
       }).toList();
-      _orderHistory.sort((a, b) {
-        DateTime dateA = DateTime.parse(a['date'].toString());
-        DateTime dateB = DateTime.parse(b['date'].toString());
-        return dateB.compareTo(dateA);
-      });
     });
+
+    print('Number of orders fetched: ${_orderHistory.length}');  // Add this line for debugging
+  } catch (e) {
+    print('Error loading order history: $e');
   }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order History'),
-        backgroundColor: Colors.deepPurple,
-      ),
       body: Column(
         children: [
           Container(
@@ -118,7 +112,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order) {
+
+    Widget _buildOrderCard(Map<String, dynamic> order) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -130,23 +125,32 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Order ID: ${order['orderId'] ?? 'Unknown'}',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                'Order ID: ${order['id'] ?? 'Unknown'}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
-                  'Total: \$${(order['totalPrice'] as num?)?.toStringAsFixed(2) ?? '0.00'}',
-                  style: const TextStyle(fontSize: 12)),
+                'Total: \$${(order['totalPrice'] as num?)?.toStringAsFixed(2) ?? '0.00'}',
+                style: const TextStyle(fontSize: 12),
+              ),
               const SizedBox(height: 4),
-              Text('Date: ${_formatDate(order['date'])}',
-                  style: const TextStyle(fontSize: 12)),
+              Text(
+                'Date: ${_formatDate(order['orderDate'])}',
+                style: const TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Status: ${order['status'] ?? 'Unknown'}',
+                style: const TextStyle(fontSize: 12),
+              ),
+               const SizedBox(height: 4),
+             Text('Shop: ${order['shop']?['name'] ?? 'Unknown Shop'}',
+                style: TextStyle(fontSize: 12)),
               const Spacer(),
               ElevatedButton(
                 onPressed: () => _openOrderDetails(order),
-                child:
-                    const Text('Track Order', style: TextStyle(fontSize: 12)),
+                child: const Text('View Details', style: TextStyle(fontSize: 12)),
               ),
             ],
           ),
@@ -154,24 +158,44 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       ),
     );
   }
+  
+  
+  String _formatDate(dynamic dateValue) {
+    if (dateValue == null) return 'No date';
+    if (dateValue is Timestamp) {
+      final date = dateValue.toDate();
+      return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    }
+    return 'Invalid date';
+  }
 
+
+  // void _openOrderDetails(Map<String, dynamic> order) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => OrderDetailsPage(order: order),
+  //     ),
+  //   );
+  // }
   void _openOrderDetails(Map<String, dynamic> order) {
+  print('Opening order details for order: ${order['id']}');
+  print('Order data: $order');
+  
+  try {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OrderDetailsPage(order: order),
       ),
     );
+  } catch (e) {
+    print('Error opening order details: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error opening order details: $e')),
+    );
   }
+}
 
-  String _formatDate(dynamic dateValue) {
-    if (dateValue == null) return 'No date';
-    try {
-      DateTime date = DateTime.parse(dateValue.toString());
-      return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-    } catch (e) {
-      print('Error parsing date: $e');
-      return 'Invalid date';
-    }
-  }
+  
 }

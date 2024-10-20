@@ -1,166 +1,12 @@
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:flour_mill/pages/honmepage.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// /*
-// import 'package:flour_mill/shared_preferences.dart';
-// */
-// import 'package:flour_mill/UIComponents/CustomTextField.dart';
-// import 'package:flour_mill/UIComponents/CustomButton.dart';
-// import 'package:flour_mill/pages/PhoneVerification.dart';
-//
-// class LoginPage extends StatefulWidget {
-//   const LoginPage({Key? key}) : super(key: key);
-//
-//   @override
-//   _LoginPageState createState() => _LoginPageState();
-// }
-//
-// class _LoginPageState extends State<LoginPage> {
-//   final TextEditingController emailController = TextEditingController();
-//   final TextEditingController passwordController = TextEditingController();
-//   bool isChecked = false;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     checkLoginStatus();
-//   }
-//
-//   Future<void> checkLoginStatus() async {
-//     final SharedPreferences prefs = await SharedPreferences.getInstance();
-//     final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-//     if (isLoggedIn) {
-//       // User is already logged in, navigate to the home page
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => const MyHomePage()),
-//       );
-//     }
-//   }
-//
-//   Future<void> loginUser() async {
-//     final String  email = emailController.text.trim();
-//     final String password = passwordController.text;
-//
-//     final url = Uri.parse('http://192.168.120.253:3000/login');
-//     final response = await http.post(
-//       url,
-//       headers: <String, String>{
-//         'Content-Type': 'application/json; charset=UTF-8',
-//       },
-//       body: jsonEncode(<String, String>{
-//         'email': email,
-//         'password': password,
-//       }),
-//     );
-//
-//     if (response.statusCode == 200) {
-//       // Successful login
-//       print('Login successful');
-//       final SharedPreferences prefs = await SharedPreferences.getInstance();
-//       prefs.setBool('isLoggedIn', true); // Save login state
-//       // Navigate to the home page
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => const MyHomePage()),
-//       );
-//     } else {
-//       // Login failed
-//       print('Login failed: ${response.body}');
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Login failed')),
-//       );
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Login Page'),
-//       ),
-//       body: SingleChildScrollView(
-//         child: Padding(
-//           padding: const EdgeInsets.fromLTRB(18.0, 70.0, 18.0, 0.0),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             children: <Widget>[
-//               const Text(
-//                 'Login',
-//                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-//               ),
-//               const SizedBox(height: 50),
-//               CustomTextField(
-//                 label: "Email",
-//                 hintText: "Enter Email ID",
-//                 controller: emailController,
-//                 prefixIcon: Icons.email,
-//               ),
-//               const SizedBox(height: 20),
-//               CustomTextField(
-//                 label: "Password",
-//                 hintText: "Enter Password",
-//                 controller: passwordController,
-//                 prefixIcon: Icons.lock,
-//                 isPassword: true,
-//               ),
-//               const SizedBox(height: 15),
-//               Row(
-//                 children: [
-//                   Checkbox(
-//                     checkColor: Colors.white,
-//                     value: isChecked,
-//                     onChanged: (bool? value) {
-//                       setState(() {
-//                         isChecked = value ?? false;
-//                       });
-//                     },
-//                   ),
-//                   const Text("Remember Me"),
-//                   Expanded(
-//                       child:
-//                       Container()),
-//                   // Added Expanded to push Forget Password to the end
-//                   TextButton(
-//                     onPressed: () {
-//                       Navigator.pushReplacement(
-//                         context,
-//                         MaterialPageRoute(
-//                           builder: (context) =>  PhoneVerification(),
-//                         ),
-//                       );
-//                     },
-//                     child: const Text(
-//                       "Forget Password",
-//                       style: TextStyle(color: Colors.blue),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               CustomButton(
-//                 onPressed: loginUser,
-//                 label: 'Login',
-//                 icon: Icons.login,
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
+import 'package:flour_mill/vendor/models/shopregistration_model.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flour_mill/Screens/HomePage.dart';
+import 'package:flour_mill/vendor/vendor_homepage.dart';
 import 'package:flour_mill/UIComponents/CustomTextField.dart';
 import 'package:flour_mill/UIComponents/CustomButton.dart';
-import 'package:flour_mill/pages/PhoneVerification.dart';
+import 'package:flour_mill/pages/SignUpPage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -173,37 +19,12 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool isChecked = false;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String _errorMessage = '';
+  bool _isLoading = false;
 
   String? _emailError;
   String? _passwordError;
-
-
-  @override
-  void initState() {
-    super.initState();
-    checkLoginStatus();
-  }
-
-  Future<void> checkLoginStatus() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    if (isLoggedIn) {
-
-      // Check if the user is still authenticated with Firebase
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        // If Firebase session is expired, clear SharedPreferences
-        await prefs.setBool('isLoggedIn', false);
-      }
-    }
-  }
 
   void validateEmail(String value) {
     setState(() {
@@ -221,8 +42,6 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       if (value.isEmpty) {
         _passwordError = 'Password is required';
-      } else if (value.length < 6) {
-        _passwordError = 'Password must be at least 6 characters long';
       } else {
         _passwordError = null;
       }
@@ -234,6 +53,11 @@ class _LoginPageState extends State<LoginPage> {
     validatePassword(passwordController.text);
 
     if (_emailError == null && _passwordError == null) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
           email: emailController.text.trim(),
@@ -241,49 +65,73 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         if (userCredential.user != null) {
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('isLoggedIn', true);
+          // Check if user exists in Customers collection
+          DocumentSnapshot customerDoc = await _firestore
+              .collection('Customers')
+              .doc(userCredential.user!.uid)
+              .get();
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
+          if (customerDoc.exists) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+          } else {
+            // If not in Customers, check Providers collection
+            DocumentSnapshot providerDoc = await _firestore
+                .collection('Providers')
+                .doc(userCredential.user!.uid)
+                .get();
+
+            if (providerDoc.exists) {
+            Map<String, dynamic> rawshopData = providerDoc.data() as Map<String, dynamic>;
+           print("Raw Firestore data: $rawshopData"); // Add this line
+
+             Map<String, dynamic> shopData = {
+            'shopname': rawshopData['shopname'] ?? 'N/A',
+            'ownername': rawshopData['ownername'] ?? 'N/A',
+            'phonenumber': rawshopData['phonenumber'] ?? 'N/A',
+            'email': rawshopData['email'] ?? 'N/A',
+            'address': rawshopData['address'] ?? 'N/A',
+            'operatinghours': rawshopData['operatinghours'] ?? 'N/A',
+            'flourTypes': (rawshopData['flourTypes'] as List<dynamic>?)?.map((item) => 
+                FlourType(
+                  name: item['name'] ?? 'Unknown',
+                  price: (item['price'] ?? 0).toDouble(),
+                ).toMap()
+              ).toList() ?? [],
+            'imageUrl': rawshopData['imageUrl'] ?? '',
+            'userType': rawshopData['userType'] ?? 'provider',
+            'createdAt': rawshopData['createdAt'] ?? DateTime.now(),
+            // Add any other fields you expect in shopData
+          };
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => VendorHomepage(shopData:shopData)),
+              );
+            } else {
+              // User not found in either collection
+              await _auth.signOut();
+              setState(() {
+                _errorMessage = 'User not found. Please check your credentials or sign up.';
+              });
+            }
+          }
         }
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = 'Login failed: ${e.message}';
+        });
       } catch (e) {
         setState(() {
-          _errorMessage = 'Login failed: ${e.toString()}';
+          _errorMessage = 'An unexpected error occurred. Please try again.';
+        });
+      } finally {
+        setState(() {
+          _isLoading = false;
         });
       }
-// =======
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) =>  HomePage()),
-//       );
-//     }
-//   }
-//
-//   Future<void> loginUser() async {
-//     try {
-//       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-//         email: emailController.text.trim(),
-//         password: passwordController.text.trim(),
-//       );
-//
-//       if (userCredential.user != null) {
-//         // Save login state in shared preferences
-//         final SharedPreferences prefs = await SharedPreferences.getInstance();
-//         prefs.setBool('isLoggedIn', true);
-//
-//         Navigator.pushReplacement(
-//           context,
-//           MaterialPageRoute(builder: (context) =>  HomePage()),
-//         );
-//       }
-//     } catch (e) {
-//       setState(() {
-//         _errorMessage = 'Login failed: ${e.toString()}';
-//       });
-// >>>>>>> origin/Ui
     }
   }
 
@@ -295,27 +143,19 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(18.0, 70.0, 18.0, 0.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Text(
-                'Login',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 50),
               CustomTextField(
                 label: "Email",
                 hintText: "Enter Email ID",
                 controller: emailController,
                 prefixIcon: Icons.email,
-
-                obscureText: false,
+                isPassword: false,
                 errorText: _emailError,
-                onChanged: validateEmail, validator: (String? value) {
-                  return null;
-                  },
-
+                onChanged: validateEmail,
+                validator: (String? value) => null,
               ),
               const SizedBox(height: 20),
               CustomTextField(
@@ -323,58 +163,34 @@ class _LoginPageState extends State<LoginPage> {
                 hintText: "Enter Password",
                 controller: passwordController,
                 prefixIcon: Icons.lock,
-
-                obscureText: true,
                 isPassword: true,
                 errorText: _passwordError,
                 onChanged: validatePassword,
-                validator: (String? value) {
-                  return null; // Return null if validation passes
-                },
-
+                validator: (String? value) => null,
               ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Checkbox(
-                    checkColor: Colors.white,
-                    value: isChecked,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isChecked = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text("Remember Me"),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PhoneVerification(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Forgot Password?",
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 20),
               if (_errorMessage.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+                Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.red),
                 ),
-              CustomButton(
-                onPressed: loginUser,
-                label: 'Login',
-                icon: Icons.login,
+              const SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : CustomButton(
+                      onPressed: loginUser,
+                      label: 'Login',
+                      icon: Icons.login,
+                    ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignUpPage()),
+                  );
+                },
+                child: const Text("Don't have an account? Sign Up"),
               ),
             ],
           ),

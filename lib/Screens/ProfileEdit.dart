@@ -1,3 +1,4 @@
+import 'package:flour_mill/Screens/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -9,8 +10,17 @@ class ProfileEdit extends StatefulWidget {
   final String name;
   final String phone;
   final String location;
+  final String userType;
+  final String uid;
 
-  const ProfileEdit({Key? key, required this.name, required this.phone, required this.location}) : super(key: key);
+  const ProfileEdit({
+    Key? key,
+    required this.name,
+    required this.phone,
+    required this.location,
+    required this.userType,
+    required this.uid,
+  }) : super(key: key);
 
   @override
   _ProfileEditState createState() => _ProfileEditState();
@@ -27,13 +37,43 @@ class _ProfileEditState extends State<ProfileEdit> {
   String _phone = '';
   String _location = '';
   bool _isUploading = false;
+  bool _isProvider = false; // To check if the user is a provider
 
   @override
   void initState() {
     super.initState();
-    _name = widget.name;
-    _phone = widget.phone;
-    _location = widget.location;
+    _getUserData(); // Fetch user data on init
+  }
+
+  // Fetch user data from Firestore
+  Future<void> _getUserData() async {
+    try {
+      DocumentSnapshot customerDoc =
+          await _firestore.collection('Customers').doc(widget.uid).get();
+      if (customerDoc.exists) {
+        setState(() {
+          _isProvider = false; // User is a customer
+          _name = customerDoc['name'];
+          _phone = customerDoc['phone'];
+          _location = customerDoc['location'];
+          _profilePicUrl = customerDoc['profilePic'];
+        });
+      } else {
+        DocumentSnapshot providerDoc =
+            await _firestore.collection('Providers').doc(widget.uid).get();
+        if (providerDoc.exists) {
+          setState(() {
+            _isProvider = true; // User is a provider
+            _name = providerDoc['name'];
+            _phone = providerDoc['phone'];
+            _location = providerDoc['location'];
+            _profilePicUrl = providerDoc['profilePic'];
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   // Image picking from the gallery
@@ -66,33 +106,43 @@ class _ProfileEditState extends State<ProfileEdit> {
           UploadTask uploadTask = storageRef.putFile(_image!);
 
           TaskSnapshot snapshot = await uploadTask;
-          _profilePicUrl = await snapshot.ref.getDownloadURL(); // Get the download URL
-
-          print('Profile pic uploaded. URL: $_profilePicUrl');
+          _profilePicUrl =
+              await snapshot.ref.getDownloadURL(); // Get the download URL
         }
 
         // Update Firestore with the new profile details
-        await _firestore.collection('Customers').doc(uid).update({
-          'name': _name,
-          'phone': _phone,
-          'location': _location,
-          'profilePic': _profilePicUrl ?? '', // Store the image URL in Firestore
-        });
+        if (_isProvider) {
+          // If user is a Provider
+          await _firestore.collection('Providers').doc(uid).update({
+            'name': _name,
+            'phone': _phone,
+            'location': _location,
+            'profilePic':
+                _profilePicUrl ?? '', // Store the image URL in Firestore
+          });
+        } else {
+          // If user is a Customer
+          await _firestore.collection('Customers').doc(uid).update({
+            'name': _name,
+            'phone': _phone,
+            'location': _location,
+            'profilePic': _profilePicUrl ?? '',
+          });
+        }
+     Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomePage(),  // Replace with your actual home page widget
+      ),
+);
 
-        // If the user is a Provider, adjust the collection accordingly
-        await _firestore.collection('Providers').doc(uid).update({
-          'name': _name,
-          'phone': _phone,
-          'location': _location,
-          'profilePic': _profilePicUrl ?? '',
-        });
 
         // Close the screen and pass the updated profile data back
-        Navigator.pop(context, {
-          'name': _name,
-          'phone': _phone,
-          'location': _location,
-        });
+        // Navigator.pop(context, {
+        //   'name': _name,
+        //   'phone': _phone,
+        //   'location': _location,
+        // });
       } catch (e) {
         print('Error uploading profile: $e');
         // You can show an error message to the user here
@@ -120,7 +170,11 @@ class _ProfileEditState extends State<ProfileEdit> {
                 radius: 60,
                 backgroundImage: _image != null
                     ? FileImage(_image!)
-                    : const AssetImage('assets/default_profile.png') as ImageProvider,
+                    : _profilePicUrl != null
+                        ? NetworkImage(
+                            _profilePicUrl!) // Show network image if available
+                        : const AssetImage('lib/assets/profile_image.jpg')
+                            as ImageProvider,
               ),
             ),
             const SizedBox(height: 16),
@@ -147,7 +201,9 @@ class _ProfileEditState extends State<ProfileEdit> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _isUploading ? null : _saveProfile, // Disable the button if uploading
+              onPressed: _isUploading
+                  ? null
+                  : _saveProfile, // Disable the button if uploading
               child: _isUploading
                   ? const CircularProgressIndicator() // Show progress if uploading
                   : const Text('Save Changes'),
