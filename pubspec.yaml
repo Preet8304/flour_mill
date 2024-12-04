@@ -101,6 +101,7 @@ flutter:
     - lib/assets/mills/mill1.png
     - lib/assets/mills/mill2.jpeg
     - lib/assets/mills/mill3.jpeg
+    - .env
 
 
 
