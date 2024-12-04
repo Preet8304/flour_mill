@@ -1,5 +1,6 @@
 import 'package:flour_mill/Screens/HomePage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -129,13 +130,13 @@ class _ProfileEditState extends State<ProfileEdit> {
             'profilePic': _profilePicUrl ?? '',
           });
         }
-     Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomePage(),  // Replace with your actual home page widget
-      ),
-);
-
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                HomePage(), // Replace with your actual home page widget
+          ),
+        );
 
         // Close the screen and pass the updated profile data back
         // Navigator.pop(context, {
@@ -164,18 +165,45 @@ class _ProfileEditState extends State<ProfileEdit> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            GestureDetector(
-              onTap: _pickImage, // Tap to pick an image
-              child: CircleAvatar(
-                radius: 60,
-                backgroundImage: _image != null
-                    ? FileImage(_image!)
-                    : _profilePicUrl != null
-                        ? NetworkImage(
-                            _profilePicUrl!) // Show network image if available
-                        : const AssetImage('lib/assets/profile_image.jpg')
-                            as ImageProvider,
-              ),
+
+            // GestureDetector(
+            //   onTap: _pickImage, // Tap to pick an image
+            //   child: CircleAvatar(
+            //     radius: 60,
+            //     backgroundImage: _image != null
+            //         ? FileImage(_image!)
+            //         : _profilePicUrl != null
+            //             ? NetworkImage(
+            //                 _profilePicUrl!) // Show network image if available
+            //             : const AssetImage('lib/assets/profile_image.jpg')
+            //                 as ImageProvider,
+            //   ),
+            // ),
+            Stack( // Use Stack for image and edit icon
+              alignment: Alignment.bottomRight,
+              children: [
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundImage: _image != null
+                        ? FileImage(_image!)
+                        : _profilePicUrl != null
+                            ? NetworkImage(_profilePicUrl!)
+                            : const AssetImage('lib/assets/profile_image.jpg')
+                                as ImageProvider,
+                  ),
+                ),
+                IconButton( // Edit icon button
+                  onPressed: _pickImage,
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                  ),
+                  padding: EdgeInsets.zero, // Remove default padding
+                  splashRadius: 20, // Adjust splash area for better UX
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(
@@ -187,6 +215,11 @@ class _ProfileEditState extends State<ProfileEdit> {
             ),
             TextField(
               decoration: const InputDecoration(labelText: 'Mobile Number'),
+              keyboardType: TextInputType.phone, // Set keyboard type to phone
+              inputFormatters: [
+                 LengthLimitingTextInputFormatter(10),
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,10}$')), // Allow only digits and limit to 10 characters
+              ],
               onChanged: (value) {
                 _phone = value;
               },

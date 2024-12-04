@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mill To Door'),),
+      appBar: AppBar(title: const Text('Mill 2 Door'),),
       drawer: const SideBar(orderHistory: [],),
       body: widgetList[myIndex],
       bottomNavigationBar: BottomNavigationBar(

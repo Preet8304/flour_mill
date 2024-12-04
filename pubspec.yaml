@@ -46,6 +46,7 @@ dependencies:
   firebase_auth: ^5.2.1
   firebase_database: ^11.1.2
   intl: ^0.17.0
+  flutter_dotenv: ^5.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -95,13 +96,9 @@ flutter:
   assets:
     - lib/assets/
     - lib/assets/categories/
-#    - lib/assets/categories/(3).png
-#    - lib/assets/categories/(4).png
-#    - lib/assets/categories/(5).png
-#    - lib/assets/categories/(6).png
     - lib/assets/mills/
-#    - lib/assets/mills/mill2.jpeg
-#    - lib/assets/mills/mill3.jpeg
+    - .env
+
 
 
 

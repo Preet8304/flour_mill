@@ -9,9 +9,11 @@ class CustomTextField extends StatefulWidget {
   final String? errorText;
   final Function(String)? onChanged;
   final String? Function(String?)? validator;
+  final String? initialValue;
 
   const CustomTextField({
     Key? key,
+    this.initialValue,
     required this.label,
     required this.hintText,
     required this.controller,
